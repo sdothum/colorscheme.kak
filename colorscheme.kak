@@ -6,10 +6,10 @@
 # Modal UI
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# SEE: kakoune-duochrome
-#      kakoune-lambda
+# SEE: bundle kakoune-duochrome.git
+#      bundle kakoune-lambda.git
 
-declare-option str theme 'duochrome'
+declare-option str theme 'duochrome'  # default
 
 # ............................................................. Term colorscheme
 
