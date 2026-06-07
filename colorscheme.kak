@@ -6,16 +6,29 @@
 # Modal UI
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# SEE: bundle kakoune-duochrome.git
-#      bundle kakoune-lambda.git
+# SEE: bundle duochrome.kak.git
+#      bundle lambda.kak.git
 
 declare-option str theme 'duochrome'  # default
 
 # ............................................................. Term colorscheme
 
 if-else %{ [ -n "$DISPLAY" ] } %{
-	declare-option str mode  ''  # initial state
-	declare-option str color ''  # force colorscheme initialization
+	declare-option str mode    ''  # initial state
+	declare-option str color   ''  # force colorscheme initialization
+
+	# match terminal background (edges) to theme SEE: duochrome
+	define-command -hidden sync-terminal-bg %{
+		if-else %{ [ "$kak_history_id" -eq 1 ] } %{
+			# readonly (manpage) windows have no bg sync issues BECAUSE: mirrored clients to kak manpage session
+			nop %sh{ pgrep -x gaps >/dev/null || alacritty msg config "colors.primary.background='#${kak_opt_current_background#*:}'" }
+		} %{
+			# socket/window_id for bg sync with multiple editing windows SEE: kakrc for tickling bg color syncing
+			# NOTE: 2>/dev/null to ignore misleading alacritty toml messages to *debug*
+			# VARIANT: alacritty msg -s $<socket> config -w $<window_id> -- "<setting>='$<value>'" 2>/dev/null }
+			nop %sh{ pgrep -x gaps >/dev/null || alacritty msg -s $kak_client_env_ALACRITTY_SOCKET config "colors.primary.background='#${kak_opt_current_background#*:}'" -w $kak_client_env_ALACRITTY_WINDOW_ID 2>/dev/null }
+		}
+	}
 
 	# NOTE: "echo" to clear statusline filename from caplock switching
 
@@ -66,8 +79,9 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 	}
 
 	# window modal/capslock "duo"chrome
-	hook global WinCreate .* %{
-		normal-mode-colorscheme
+	hook global WinCreate .* %{ normal-mode-colorscheme }
+
+	hook global WinCreate ^[^*].* %{
 		hook window ModeChange (push|pop):.*:insert insert-mode-colorscheme
 		hook window ModeChange (push|pop):insert:.* normal-mode-colorscheme
 		hook window InsertIdle .*                   capslock-check
@@ -78,7 +92,7 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 
 # .......................................................... Console colorscheme
 
-declare-option str theme %sh{ echo "${COLORSCHEME:-plain}" }
+declare-option str theme %sh{ echo "${COLORSCHEME:-default}" }
 	colorscheme %opt{theme}
 }
 
