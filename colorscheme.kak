@@ -25,7 +25,7 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 		} %{
 			# socket/window_id for bg sync with multiple editing windows SEE: kakrc for tickling bg color syncing
 			# NOTE: 2>/dev/null to ignore misleading alacritty toml messages to *debug*
-			# VARIANT: alacritty msg -s $<socket> config -w $<window_id> -- "<setting>='$<value>'" 2>/dev/null }
+			# VARIANT: alacritty msg -s $<socket> config -w $<window_id> -- "<setting>='$<value>'" (config -w with double dash '--' BEFORE settings)
 			nop %sh{ pgrep -x gaps >/dev/null || alacritty msg -s $kak_client_env_ALACRITTY_SOCKET config "colors.primary.background='#${kak_opt_current_background#*:}'" -w $kak_client_env_ALACRITTY_WINDOW_ID 2>/dev/null }
 		}
 	}
@@ -92,7 +92,7 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 
 # .......................................................... Console colorscheme
 
-declare-option str theme %sh{ echo "${COLORSCHEME:-default}" }
+	declare-option str theme %sh{ echo "${COLORSCHEME:-default}" }
 	colorscheme %opt{theme}
 }
 
