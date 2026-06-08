@@ -20,10 +20,10 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 	# match terminal background (edges) to theme SEE: duochrome
 	define-command -hidden sync-terminal-bg %{
 		if-else %{ [ "$kak_history_id" -eq 1 ] } %{
-			# readonly (manpage) windows have no bg sync issues BECAUSE: mirrored clients to kak manpage session
-			nop %sh{ pgrep -x gaps >/dev/null || alacritty msg config "colors.primary.background='#${kak_opt_current_background#*:}'" }
+			# for readonly (manpage) windows BECAUSE: socket/window_id sync cannot be executed for readonly files SEE: kakrc
+			nop %sh{ alacritty msg config "colors.primary.background='#${kak_opt_current_background#*:}'" }
 		} %{
-			# socket/window_id for bg sync with multiple editing windows SEE: kakrc for tickling bg color syncing
+			# socket/window_id for bg sync with multiple editing windows SEE: kakrc for refreshing bg color syncing
 			# NOTE: 2>/dev/null to ignore misleading alacritty toml messages to *debug*
 			# VARIANT: alacritty msg -s $<socket> config -w $<window_id> -- "<setting>='$<value>'" (config -w with double dash '--' BEFORE settings)
 			nop %sh{ pgrep -x gaps >/dev/null || alacritty msg -s $kak_client_env_ALACRITTY_SOCKET config "colors.primary.background='#${kak_opt_current_background#*:}'" -w $kak_client_env_ALACRITTY_WINDOW_ID 2>/dev/null }
