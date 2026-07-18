@@ -17,18 +17,45 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 	declare-option str mode    ''  # initial state
 	declare-option str color   ''  # force colorscheme initialization
 
-	# match terminal background (edges) to theme SEE: duochrome
+	# dynamically match alacritty terminal background (edges) to theme SEE: duochrome
+
 	define-command -hidden sync-terminal-bg %{
-		if-else %{ [ "$kak_history_id" -eq 1 ] } %{
-			# for readonly (manpage) windows BECAUSE: socket/window_id sync cannot be executed for readonly files SEE: kakrc
-			nop %sh{ alacritty msg config "colors.primary.background='#${kak_opt_current_background#*:}'" }
-		} %{
-			# socket/window_id for bg sync with multiple editing windows SEE: kakrc for refreshing bg color syncing
-			# NOTE: 2>/dev/null to ignore misleading alacritty toml messages to *debug*
-			# VARIANT: alacritty msg -s $<socket> config -w $<window_id> -- "<setting>='$<value>'" (config -w with double dash '--' BEFORE settings)
-			nop %sh{ pgrep -x gaps >/dev/null || alacritty msg -s $kak_client_env_ALACRITTY_SOCKET config "colors.primary.background='#${kak_opt_current_background#*:}'" -w $kak_client_env_ALACRITTY_WINDOW_ID 2>/dev/null }
-		}
+	   nop %sh{
+			colors="colors.primary.background='#${kak_opt_current_background#*:}'"
+
+			# NOTE: read current alacritty indentifiers from attached tmux session SEE: $HOME/.tmux.conf
+			if [ -n "$TMUX" ]; then
+				socket=$(tmux show-environment ALACRITTY_SOCKET 2>/dev/null)
+				case "$socket" in
+					-* | '' ) socket='' ;;
+					*=*     ) socket=${socket#*=} ;;
+				esac
+
+				window=$(tmux show-environment ALACRITTY_WINDOW_ID 2>/dev/null)
+				case "$window" in
+					-* | '' ) window='' ;;
+					*=*     ) window=${window#*=} ;;
+				esac
+			else
+				socket=$kak_client_env_ALACRITTY_SOCKET
+				window=$kak_client_env_ALACRITTY_WINDOW_ID
+			fi
+
+
+	      [ -n "$socket" ] &&
+	      [ -n "$window" ] &&
+	      alacritty msg  --socket "${socket}" config "$colors" --window-id "${window}"
+	   }
 	}
+
+	define-command -hidden restore-terminal-bg %{
+		set-option window current_background %sh{ echo ${TERMBG:-263238} }
+		sync-terminal-bg
+	}
+
+	hook global ClientCreate .* sync-terminal-bg
+	hook global ClientClose  .* restore-terminal-bg
+
 
 	# NOTE: "echo" to clear statusline filename from caplock switching
 
