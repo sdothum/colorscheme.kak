@@ -41,7 +41,6 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 				window=$kak_client_env_ALACRITTY_WINDOW_ID
 			fi
 
-
 	      [ -n "$socket" ] &&
 	      [ -n "$window" ] &&
 	      alacritty msg  --socket "${socket}" config "$colors" --window-id "${window}"
