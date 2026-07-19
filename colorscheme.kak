@@ -25,7 +25,7 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 				colors="colors.primary.background='#${kak_opt_current_background#*:}'"
 
 				# NOTE: read current alacritty indentifiers from attached tmux session SEE: $HOME/.tmux.conf
-				if [ -n "$TMUX" ]; then
+				if [ -n "$TMUX" ] && [ -z "$MANPAGER" ]; then  # avoid setting tmux window SEE: manpage (script)
 					socket=$(tmux show-environment ALACRITTY_SOCKET 2>/dev/null)
 					case "$socket" in
 						-* | '' ) socket='' ;;
