@@ -23,9 +23,12 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 		define-command -hidden sync-terminal-bg %{
 		   nop %sh{
 				colors="colors.primary.background='#${kak_opt_current_background#*:}'"
+				socket=$kak_client_env_ALACRITTY_SOCKET
+				window=$kak_client_env_ALACRITTY_WINDOW_ID
 
-				# NOTE: read current alacritty indentifiers from attached tmux session SEE: $HOME/.tmux.conf
-				if [ -n "$TMUX" ] && [ -z "$MANPAGER" ]; then  # avoid setting tmux window SEE: manpage (script)
+				[ -n "$TMUX" ] &&          # FOR: (attached) tmux session (kak within tmux pane) SEE: $HOME/.tmux.conf
+				[ -z "${TERM%tmux*}" ] &&  # UNLESS: spawned as separate term (from tmux shell)
+				{
 					socket=$(tmux show-environment ALACRITTY_SOCKET 2>/dev/null)
 					case "$socket" in
 						-* | '' ) socket='' ;;
@@ -37,10 +40,7 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 						-* | '' ) window='' ;;
 						*=*     ) window=${window#*=} ;;
 					esac
-				else
-					socket=$kak_client_env_ALACRITTY_SOCKET
-					window=$kak_client_env_ALACRITTY_WINDOW_ID
-				fi
+				}
 
 				[ -n "$socket" ] &&
 				[ -n "$window" ] &&
