@@ -95,7 +95,7 @@ if-else %{ [ -n "$DISPLAY" ] } %{
 		trace %{ capslock-check }
 		if-else %{ capslock } %{
 			capslock-colorscheme
-			set-option window caps_spacer %opt{spacer}  # SEE: ui.kak
+			set-option window caps_spacer %opt{spacer}  # SEE: ui.kak modelinefmt
 		} %{
 			set-option window caps_spacer ''
 			if-else %{ [ "$kak_opt_mode" = "insert" ] } %{
